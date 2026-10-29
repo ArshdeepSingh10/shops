@@ -31,12 +31,14 @@ setInterval(sync,30000);document.addEventListener('visibilitychange',sync);
 
 function pills(){$('#pl').innerHTML=['All',...new Set(P.map(p=>p.category).filter(Boolean))].map(c=>`<button class="pl${(c==='All'?'':c)===CAT?' on':''}" data-c="${c==='All'?'':esc(c)}">${esc(c)}</button>`).join('');}
 function render(){const q=$('#q').value.toLowerCase().trim(),l=P.filter(p=>(!CAT||p.category===CAT)&&(!q||(p.name+' '+p.category+' '+(p.fabric||'')).toLowerCase().includes(q)));
+  VIS=l.map(p=>p.id);
   $('#g').innerHTML=l.length?l.map(p=>`<div class="card${!inStock(p)?' oos':''}" data-id="${esc(p.id)}" tabindex="0" role="button"><div class="tile" style="background:${tint(p)}">${!inStock(p)?`<span class="bd">${p.cake?'Sold out':'Out of stock'}</span>`:''}${media(p)}</div><div class="tx"><small>${esc(p.category)}</small><b class="nm">${esc(p.name)}</b><span class="price">${p.cake?'From ':''}${money(from(p))}</span></div></div>`).join(''):'<div class="msg">No products found.</div>';}
 $('#pl').onclick=e=>{const b=e.target.closest('button');if(b){CAT=b.dataset.c;pills();render();}};$('#q').oninput=render;
 $('#g').onclick=e=>{const c=e.target.closest('.card');if(c)openP(c.dataset.id);};$('#g').onkeydown=e=>{if(e.key==='Enter'){const c=e.target.closest('.card');if(c)openP(c.dataset.id);}};
 const chips=(k,a,v)=>`<div class="chs">${a.map(x=>`<button type="button" class="ch${x===v?' on':''}" data-k="${k}" data-v="${esc(x)}">${esc(x)}</button>`).join('')}</div>`,og=(k,t,a)=>a&&a.length?`<div class="og"><label>${t}</label>${chips(k,a,O[k])}</div>`:'';
 function price(){const p=cur,u=unit(p,O);$('#pc').innerHTML=`${money(u)}${p.estimate?' <small>estimate, confirmed on WhatsApp</small>':''}`;}
-const gallery=p=>{const im=p.images||[];return `<div class="gl"><div class="tile big" style="background:${tint(p)}">${im[0]?`<img id="mi" src="${esc(img(im[0],900))}" alt="${esc(p.name)}">`:`<span class="em">${S.emoji||'🛍️'}</span>`}</div>${im.length>1?`<div class="tm">${im.map((u,i)=>`<img loading="lazy" class="${i?'':'on'}" src="${esc(img(u,120))}" data-f="${esc(img(u,900))}" alt="">`).join('')}</div>`:''}</div>`;};
+let VIS=[];
+const gallery=p=>{const im=p.images||[];return `<div class="gl"><div class="tw"><div class="tile big" style="background:${tint(p)}">${im[0]?`<img id="mi" src="${esc(img(im[0],900))}" alt="${esc(p.name)}">`:`<span class="em">${S.emoji||'🛍️'}</span>`}</div>${VIS.length>1?'<button class="nv pv" data-n="-1" aria-label="Previous product">‹</button><button class="nv nx" data-n="1" aria-label="Next product">›</button>':''}</div>${im.length>1?`<div class="tm">${im.map((u,i)=>`<img loading="lazy" class="${i?'':'on'}" src="${esc(img(u,120))}" data-f="${esc(img(u,900))}" alt="">`).join('')}</div>`:''}</div>`;};
 function openP(id){cur=P.find(x=>x.id===id);if(!cur)return;const p=cur;qty=1;O={};
   if(p.cake){O.weight=Object.keys(p.weights||{})[0];if(p.flavors&&p.flavors[0])O.flavor=p.flavors[0];if(p.shapes&&p.shapes[0])O.shape=p.shapes[0];if(p.types&&p.types[0])O.type=p.types[0];if(p.designs&&p.designs[0])O.design=p.designs[0];}
   else{if(p.colors&&p.colors[0])O.color=p.colors[0];if(p.sizes&&p.sizes[0])O.size=p.sizes[0];}
@@ -44,12 +46,14 @@ function openP(id){cur=P.find(x=>x.id===id);if(!cur)return;const p=cur;qty=1;O={
   d.innerHTML=`<button class="x" data-x aria-label="Close">×</button><div class="pm">${gallery(p)}<div class="pi"><small>${esc(p.category)}</small><h2>${esc(p.name)}</h2><div class="price" id="pc"></div><p class="mu">${esc(p.desc||'')}${p.fabric?` Fabric: ${esc(p.fabric)}.`:''}</p>
   ${p.cake?og('flavor','Flavor',p.flavors)+og('weight','Weight / size',Object.keys(p.weights||{}))+og('shape','Shape',p.shapes)+og('type','Eggless or regular',p.types)+og('design','Design',p.designs)+`<div class="og"><label>Message on cake (optional)</label><input id="cm" maxlength="40" placeholder="e.g. Happy Birthday Riya"></div><div class="og"><label>Required date &amp; time</label><input id="when" type="datetime-local" min="${min}"><small>Please order at least ${lead} hours ahead.</small></div>`:og('color','Color',p.colors)+og('size','Size',p.sizes)}
   <div class="og"><label>Quantity</label><div class="st"><button data-q="-1">−</button><b id="qv">1</b><button data-q="1">+</button></div></div><div class="er" id="me"></div>
-  ${inStock(p)?'<button class="bt" id="add">Add to cart</button>':'<button class="bt" disabled>Out of stock</button>'}</div></div>`;price();d.showModal();}
+  ${inStock(p)?'<button class="bt" id="add">Add to cart</button>':'<button class="bt" disabled>Out of stock</button>'}</div></div>`;price();d.scrollTop=0;if(!d.open)d.showModal();}
 $('#pd').onclick=e=>{const d=e.currentTarget,t=e.target;if(t===d||t.dataset.x!==undefined)return d.close();
+  const nv=t.closest('[data-n]');if(nv){const i=VIS.indexOf(cur.id);openP(VIS[(i+ +nv.dataset.n+VIS.length)%VIS.length]);return;}
   const th=t.closest('.tm img');if(th){$('#mi').src=th.dataset.f;th.parentNode.querySelectorAll('img').forEach(x=>x.classList.toggle('on',x===th));return;}
   const c=t.closest('[data-k]');if(c){O[c.dataset.k]=c.dataset.v;c.parentNode.querySelectorAll('.ch').forEach(x=>x.classList.toggle('on',x===c));price();}
   const q=t.closest('[data-q]');if(q){const mx=cur.cake?10:Math.max(1,cur.stock);qty=Math.min(mx,Math.max(1,qty+ +q.dataset.q));$('#qv').textContent=qty;}
   if(t.id==='add')addCart();};
+$('#pd').addEventListener('keydown',e=>{if(e.target.tagName==='INPUT'||VIS.length<2)return;const k=e.key==='ArrowRight'?1:e.key==='ArrowLeft'?-1:0;if(k)openP(VIS[(VIS.indexOf(cur.id)+k+VIS.length)%VIS.length]);});
 function addCart(){const p=cur,o={...O},er=m=>$('#me').textContent=m,lead=+p.lead||0;
   if(p.cake){const w=$('#when').value;if(!w)return er('Please choose the date and time you need the cake.');if(new Date(w).getTime()<Date.now()+lead*36e5)return er(`Please choose a time at least ${lead} hours from now.`);o.when=w;const m=$('#cm').value.trim();if(m)o.msg=m;}
   const key=JSON.stringify([p.id,o]),ex=cart.find(l=>l.key===key);if(ex)ex.qty=Math.min(p.cake?10:Math.max(1,p.stock),ex.qty+qty);
