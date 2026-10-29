@@ -1,7 +1,11 @@
+function fail(m){document.body.insertAdjacentHTML('afterbegin','<div class="msg" style="padding:24px 18px;color:#b3261e"><b>Setup problem</b><br>'+m+'</div>');}
+window.onerror=(m,src,l)=>{fail(String(m)+' ('+String(src||'').split('/').pop()+', line '+l+')');};
+if(!window.SHOPS){fail('config.js did not load or has a syntax error. Open config.js in your browser to check it.');window.SHOPS={};}
 const $=s=>document.querySelector(s),K=Object.keys(window.SHOPS),pb=new URLSearchParams(location.search).get('b'),B=window.SHOPS[pb]?pb:(K.length===1?K[0]:null);
-if(!B)location.replace('index.html');            // several shops and none chosen: show the chooser
+if(!B&&K.length)location.replace('index.html');            // several shops and none chosen: show the chooser
 if(K.length<2)$('.bk').hidden=true;               // only one shop: no "back to all shops" arrow
-const S=SHOPS[B]||{},P=CATALOG[B]||[],L={color:'Color',size:'Size',flavor:'Flavor',weight:'Weight',shape:'Shape',type:'Type',design:'Design',msg:'Cake message',when:'Required date'};
+const S=SHOPS[B]||{},P=(window.CATALOG&&CATALOG[B])||[],L={color:'Color',size:'Size',flavor:'Flavor',weight:'Weight',shape:'Shape',type:'Type',design:'Design',msg:'Cake message',when:'Required date'};
+if(!window.CATALOG)fail('data.js did not load or has a syntax error. Open data.js in your browser to check it.');else if(!P.length)fail('No products found for "'+B+'" in data.js.');
 document.body.dataset.b=B;document.title=S.name;$('#sn').textContent=S.name;$('#tg').textContent=S.tagline;
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])),money=n=>'₹'+Number(n).toLocaleString('en-IN');
 const fmt=v=>new Date(v).toLocaleString('en-IN',{dateStyle:'medium',timeStyle:'short'}),loc=ms=>{const d=new Date(ms);d.setMinutes(d.getMinutes()-d.getTimezoneOffset());return d.toISOString().slice(0,16);};
