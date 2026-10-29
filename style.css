@@ -24,3 +24,4 @@ dialog{border:0;padding:0;background:#fff;color:var(--ink);width:100%;max-width:
 #ts{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);background:var(--ink);color:#fff;padding:10px 20px;border-radius:99px;z-index:50}
 @media(prefers-reduced-motion:reduce){*{animation:none!important}}
 .gl{display:flex;flex-direction:column;min-width:0}.tm{display:flex;gap:8px;overflow-x:auto;padding:10px 14px}.tm img{width:60px;height:60px;object-fit:cover;border-radius:12px;cursor:pointer;border:2px solid transparent;flex:none;background:#fff}.tm img.on{border-color:var(--ac)}
+.tw{position:relative}.nv{position:absolute;top:50%;transform:translateY(-50%);z-index:1;width:40px;height:40px;border-radius:50%;border:0;background:#fffe;box-shadow:var(--sh);font-size:26px;line-height:1;padding:0 0 3px;cursor:pointer;color:var(--ink)}.nv.pv{left:10px}.nv.nx{right:10px}
