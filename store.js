@@ -36,15 +36,17 @@ $('#pl').onclick=e=>{const b=e.target.closest('button');if(b){CAT=b.dataset.c;pi
 $('#g').onclick=e=>{const c=e.target.closest('.card');if(c)openP(c.dataset.id);};$('#g').onkeydown=e=>{if(e.key==='Enter'){const c=e.target.closest('.card');if(c)openP(c.dataset.id);}};
 const chips=(k,a,v)=>`<div class="chs">${a.map(x=>`<button type="button" class="ch${x===v?' on':''}" data-k="${k}" data-v="${esc(x)}">${esc(x)}</button>`).join('')}</div>`,og=(k,t,a)=>a&&a.length?`<div class="og"><label>${t}</label>${chips(k,a,O[k])}</div>`:'';
 function price(){const p=cur,u=unit(p,O);$('#pc').innerHTML=`${money(u)}${p.estimate?' <small>estimate, confirmed on WhatsApp</small>':''}`;}
+const gallery=p=>{const im=p.images||[];return `<div class="gl"><div class="tile big" style="background:${tint(p)}">${im[0]?`<img id="mi" src="${esc(img(im[0],900))}" alt="${esc(p.name)}">`:`<span class="em">${S.emoji||'🛍️'}</span>`}</div>${im.length>1?`<div class="tm">${im.map((u,i)=>`<img loading="lazy" class="${i?'':'on'}" src="${esc(img(u,120))}" data-f="${esc(img(u,900))}" alt="">`).join('')}</div>`:''}</div>`;};
 function openP(id){cur=P.find(x=>x.id===id);if(!cur)return;const p=cur;qty=1;O={};
   if(p.cake){O.weight=Object.keys(p.weights||{})[0];if(p.flavors&&p.flavors[0])O.flavor=p.flavors[0];if(p.shapes&&p.shapes[0])O.shape=p.shapes[0];if(p.types&&p.types[0])O.type=p.types[0];if(p.designs&&p.designs[0])O.design=p.designs[0];}
   else{if(p.colors&&p.colors[0])O.color=p.colors[0];if(p.sizes&&p.sizes[0])O.size=p.sizes[0];}
   const d=$('#pd'),lead=+p.lead||0,min=p.cake?loc(Date.now()+lead*36e5):'';
-  d.innerHTML=`<button class="x" data-x aria-label="Close">×</button><div class="pm"><div class="tile big" style="background:${tint(p)}">${media(p)}</div><div class="pi"><small>${esc(p.category)}</small><h2>${esc(p.name)}</h2><div class="price" id="pc"></div><p class="mu">${esc(p.desc||'')}${p.fabric?` Fabric: ${esc(p.fabric)}.`:''}</p>
+  d.innerHTML=`<button class="x" data-x aria-label="Close">×</button><div class="pm">${gallery(p)}<div class="pi"><small>${esc(p.category)}</small><h2>${esc(p.name)}</h2><div class="price" id="pc"></div><p class="mu">${esc(p.desc||'')}${p.fabric?` Fabric: ${esc(p.fabric)}.`:''}</p>
   ${p.cake?og('flavor','Flavor',p.flavors)+og('weight','Weight / size',Object.keys(p.weights||{}))+og('shape','Shape',p.shapes)+og('type','Eggless or regular',p.types)+og('design','Design',p.designs)+`<div class="og"><label>Message on cake (optional)</label><input id="cm" maxlength="40" placeholder="e.g. Happy Birthday Riya"></div><div class="og"><label>Required date &amp; time</label><input id="when" type="datetime-local" min="${min}"><small>Please order at least ${lead} hours ahead.</small></div>`:og('color','Color',p.colors)+og('size','Size',p.sizes)}
   <div class="og"><label>Quantity</label><div class="st"><button data-q="-1">−</button><b id="qv">1</b><button data-q="1">+</button></div></div><div class="er" id="me"></div>
   ${inStock(p)?'<button class="bt" id="add">Add to cart</button>':'<button class="bt" disabled>Out of stock</button>'}</div></div>`;price();d.showModal();}
 $('#pd').onclick=e=>{const d=e.currentTarget,t=e.target;if(t===d||t.dataset.x!==undefined)return d.close();
+  const th=t.closest('.tm img');if(th){$('#mi').src=th.dataset.f;th.parentNode.querySelectorAll('img').forEach(x=>x.classList.toggle('on',x===th));return;}
   const c=t.closest('[data-k]');if(c){O[c.dataset.k]=c.dataset.v;c.parentNode.querySelectorAll('.ch').forEach(x=>x.classList.toggle('on',x===c));price();}
   const q=t.closest('[data-q]');if(q){const mx=cur.cake?10:Math.max(1,cur.stock);qty=Math.min(mx,Math.max(1,qty+ +q.dataset.q));$('#qv').textContent=qty;}
   if(t.id==='add')addCart();};
