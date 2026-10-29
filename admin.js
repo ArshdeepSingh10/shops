@@ -91,3 +91,26 @@ function openCats(){const d=$('#cd');
   d.innerHTML=`<div class="dp"><h3>Categories (${cats.length})</h3><input id="cq" class="s" type="search" placeholder="Search categories" style="width:100%"><div id="cl" class="cl"></div></div>`;
   const paint=()=>{const q=$('#cq').value.toLowerCase();$('#cl').innerHTML='<button class="cr" data-c=""><span>All products</span></button>'+(cats.filter(c=>c[0].toLowerCase().includes(q)).map(c=>`<button class="cr" data-c="${esc(c[0])}"><span>${esc(c[0])}</span><span class="pill">${c[1]}</span></button>`).join('')||'<p class="mu">No category found.</p>');};
   paint();$('#cq').oninput=paint;$('#cl').onclick=e=>{const b=e.target.closest('button');if(b){setCat(b.dataset.c);d.close();}};d.showModal();}
+
+// ---- Excel import / export (same columns as the Google Sheet)
+const HDR=()=>['ID',...FL.map(f=>f[3]),'Image URLs','Image Public IDs','Status'];
+const SAMPLE={text:'Example',long:'Short description',number:'100',list:'Option 1, Option 2',map:'1 kg=1000, 2 kg=1900',yesno:'No'};
+function xl(name,rows){const wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet(rows),'Products');XLSX.writeFile(wb,name);}
+$('#exp').onclick=()=>{if(!FL.length)return toast('Products are still loading',1);
+  xl(B+'-products.xlsx',[HDR(),...prods.map(p=>[p.id,...FL.map(f=>p.raw[f[0]]),p.images.join(','),p.publicIds.join(','),p.status])]);};
+$('#tpl').onclick=()=>{if(!FL.length)return toast('Products are still loading',1);
+  xl(B+'-template.xlsx',[HDR(),['',...FL.map(f=>SAMPLE[f[2]]||''),'','','Active']]);};
+$('#imp').onchange=async e=>{const f=e.target.files[0];e.target.value='';if(!f)return;if(!FL.length)return toast('Products are still loading',1);
+  try{const wb=XLSX.read(await f.arrayBuffer(),{type:'array'}),raw=XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]],{defval:''}),rows=[],errs=[];
+    const sp=s=>String(s||'').split(',').map(x=>x.trim()).filter(Boolean);
+    raw.forEach((r,i)=>{const n=i+2,v={};FL.forEach(fl=>v[fl[0]]=String(r[fl[3]]??'').trim());
+      const im=sp(r['Image URLs']),ids=sp(r['Image Public IDs']);
+      if(!v.name)errs.push(`Row ${n}: Name missing`);
+      FL.forEach(fl=>{if(fl[2]==='number'&&v[fl[0]]!==''&&isNaN(Number(v[fl[0]])))errs.push(`Row ${n}: ${fl[1]} must be a number`);});
+      if(im.length!==ids.length)errs.push(`Row ${n}: image URLs and IDs count differ`);
+      rows.push({id:String(r.ID||'').trim(),v,images:im,publicIds:ids,status:String(r.Status||'Active').trim()});});
+    $('#pv').innerHTML=`<div class="dp"><h3>Import preview: ${rows.length} rows</h3>${errs.length?`<p class="err">${errs.slice(0,15).map(esc).join('<br>')}</p>`:'<p>All rows valid.</p>'}<div class="scroll"><table>${rows.slice(0,10).map(r=>`<tr><td>${esc(r.v.name)}</td><td>${esc(r.v.category)}</td></tr>`).join('')}</table></div>
+    <div class="ft"><button class="btn alt" id="pc">Cancel</button><button class="btn" id="ap" ${errs.length||!rows.length?'disabled':''}>Apply import</button></div></div>`;
+    $('#pc').onclick=()=>$('#pv').close();
+    $('#ap').onclick=ev=>go(ev.target,async()=>{const r=await api('bulkImport',{rows});$('#pv').close();toast(`Added ${r.added}, updated ${r.updated}`);await refresh();});$('#pv').showModal();
+  }catch(x){toast('Could not read file: '+x.message,1);}};
