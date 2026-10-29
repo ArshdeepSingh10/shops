@@ -1,7 +1,7 @@
-const $=s=>document.querySelector(s),K=Object.keys(window.SHOPS||{}),B=new URLSearchParams(location.search).get('b')||(K.length===1?K[0]:null),S=(window.SHOPS||{})[B];
+const $=s=>document.querySelector(s),K=Object.keys(window.SHOPS||{}),B=new URLSearchParams(location.search).get('b')||K[0],S=(window.SHOPS||{})[B];
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 if(!S){$('#pick').hidden=false;$('#pl').innerHTML=Object.entries(SHOPS).map(([k,s])=>`<a class="btn" style="background:var(--ink);color:#fff;text-decoration:none" href="admin.html?b=${k}">${s.emoji} ${esc(s.name)}</a>`).join('');throw 0;}
-$('#login').hidden=false;$('#lt').textContent=S.name+' – Admin';document.title=S.name+' – Admin';
+$('#login').hidden=false;if(K.length>1)$('#tabs').innerHTML=K.map(k=>`<a class="tab${k===B?' on':''}" href="admin.html?b=${k}">${SHOPS[k].emoji} ${esc(SHOPS[k].name)}</a>`).join('');$('#lt').textContent=S.name+' – Admin';document.title=S.name+' – Admin';
 const API=S.api,TK='tok_'+B;
 let cats=[],catF='',prods=[],FL=[],kind='',imgs=[],fresh=[],editId=null,saved=false,uploading=0;
 const money=n=>'₹'+Number(n).toLocaleString('en-IN');
