@@ -1,4 +1,5 @@
 <!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><title>Model Town Extension Shops</title><link rel="stylesheet" href="style.css"></head><body data-b="home">
 <main class="w home"><h1>Shop local in Model Town Extension, Ludhiana</h1><p class="mu">Choose a shop, pick what you like and send your order on WhatsApp.</p>
 <div class="hg" id="hg"></div><p class="mu sm">You review and send the message yourself. An order is confirmed only when the shop replies.</p></main>
-<script src="config.js"></script><script>document.getElementById('hg').innerHTML=Object.entries(SHOPS).map(([k,s])=>`<a class="hc ${k}" href="store.html?b=${k}"><span class="em">${s.emoji}</span><h2>${s.name}</h2><p>${s.tagline}</p><span class="bt">Browse &amp; order</span></a>`).join('');</script></body></html>
+<script src="config.js"></script><script>const K=Object.keys(SHOPS);if(K.length===1)location.replace('store.html?b='+K[0]);   // only one shop: skip the chooser
+document.getElementById('hg').innerHTML=Object.entries(SHOPS).map(([k,s])=>`<a class="hc ${k}" href="store.html?b=${k}"><span class="em">${s.emoji}</span><h2>${s.name}</h2><p>${s.tagline}</p><span class="bt">Browse &amp; order</span></a>`).join('');</script></body></html>
